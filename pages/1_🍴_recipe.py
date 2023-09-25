@@ -4,9 +4,9 @@ import json
 
 from pint import UnitRegistry
 from copy import deepcopy
+from streamlit_extras.switch_page_button import switch_page
 
-
-# Todos
+# @todo:
 # - file read
 # - file write
 
@@ -50,7 +50,6 @@ class Zutat:
 
         return self.list[self.num - 1]
 
-    
 
 class Rezept:
     name: str
@@ -60,7 +59,6 @@ class Rezept:
     portionen: int # die Standard-Portionszahl
 
     unit_reg: UnitRegistry
-
 
     def __init__(self, name: str, autor: str,  zutaten: dict, portionen: int, unit_registry: UnitRegistry): # warum wird dict angenommen?
         self.name = name
@@ -95,8 +93,8 @@ class Kochbuch:
         self.Rezepte[rezept.name] = rezept
 
 
-
 st.sidebar.markdown("# Rezepte 🍴")
+
 st.write("## Rezepte 🍴")
 
 
@@ -105,9 +103,10 @@ unit_reg = UnitRegistry()
 Q = unit_reg.Quantity
 Q("200g").to("kg")
 
-st.write('Variable =  {:P}'.format(Q("10 m/s^2"))) # Markdown
-st.latex('Variable =  {:L}'.format(Q("10 m/s^2"))) # LaTex
-st.write('Variable =  {:H}'.format(Q("10 m/s^2"))) # html
+
+# st.write('Variable =  {:P}'.format(Q("10 m/s^2"))) # Markdown
+# st.latex('Variable =  {:L}'.format(Q("10 m/s^2"))) # LaTex
+# st.write('Variable =  {:H}'.format(Q("10 m/s^2"))) # html
 
 # zutat1 = Zutat("Salz", 100, "gram", unit_reg)
 # print(zutat1.menge.to("kg"))
@@ -118,13 +117,10 @@ st.write('Variable =  {:H}'.format(Q("10 m/s^2"))) # html
 
 unit_reg = UnitRegistry(fmt_locale='de_DE')
 
-
-
 rezept = Rezept( "Schinkenbrot", "Lukas", {
     "Zutat 1": Zutat("Schinken", "100 g", unit_reg),
     "Zutat 2": Zutat("Brot", "100 g", unit_reg)
 }, 4, unit_reg)
-
 
 rezept.add_zubereitung('''Zubereitung:
 1. Schritt: Wasser zum kochen bringen
@@ -146,20 +142,26 @@ dieses_kochbuch = Kochbuch("Lukas' Kochbuch")
 dieses_kochbuch.append(rezept)
 dieses_kochbuch.append(rezept2)
 
-
-
 # with st.expander("Alle Rezepte"):
-radio_select = st.radio("Rezepte", dieses_kochbuch.Rezepte.keys())
+radio_select = st.radio("rezepte", options=dieses_kochbuch.Rezepte.keys(), label_visibility="hidden")
 
-#Using magic output
-"## Rezept"
+col1, col2, _ = st.columns([1, 1, 2], gap="small")
+
+with col1:
+    if st.button("Rezept bearbeiten"):
+        switch_page("recipe_editor")
+
+with col2:
+    if st.button("Neues Rezept"):
+        switch_page("recipe_editor")
+
+# Using magic output
 sel_recipe = dieses_kochbuch.Rezepte[radio_select]
 
+st.write(f"### {sel_recipe.name}")
+st.write(f"*von {sel_recipe.autor}*")
 
-sel_recipe.name
-sel_recipe.autor
-
-st.table(pd.DataFrame(sel_recipe.Zutaten, index = ["Zutat", "Menge"]).transpose())
+st.table(pd.DataFrame(sel_recipe.Zutaten, index=["Zutat", "Menge"]).transpose())
 
 
 portionen = 4
