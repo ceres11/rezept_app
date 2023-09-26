@@ -1,34 +1,44 @@
-import streamlit as st
-import pandas as pd
-import json
+from pages import *
 
+for i in st.session_state.items():
+    i
+prev_name, prev_zutaten, prev_zubereitung = "", "", ""
 
-# Rezeptdaten eingeben
-st.write("# Neues Rezept")
+st.write(st.session_state.dieses_kochbuch.Rezepte.keys())
 
+if st.session_state.edit_recipe != "":
+    pr_recipe = st.session_state.edit_recipe
+    prev_name = pr_recipe.name
+    prev_zutaten = pr_recipe.Zutaten
+    prev_zubereitung = pr_recipe.zubereitung
+    st.write(f'# "{pr_recipe.name}" bearbeiten')
+else:
+    st.write("# Neues Rezept")
+
+# Rezeptdaten eingeben / uebernehmen
 with st.form("my_form"):
-    ## Rezeptname
-    st.text_input("Name")
+    # Autor option
+    autor = "anonym"
+    # Rezeptname
+    name = st.text_input("Name", prev_name)
+    # Bild
+    bild = st.file_uploader("Bild hinzufuegen")
+    # Zutaten
+    zutaten = st.text_area("Zutaten", prev_zutaten)
+    # Zubereitung
+    zubereitung = st.text_area("Zubereitung", prev_zubereitung)
 
-    ## Bild
-    st.file_uploader("Bild hinzufuegen")
+    vorschau = st.form_submit_button("Rezept generieren")
 
-    ## Zutaten
-    st.text_area("Zutaten")
-    # if st.button("Zutat hinzufuegen"):
-    #     col1, col2, col3 = st.columns(3)
-    #     with col1:
-    #         col1 = st.number_input("Anzahl")
-    #     with col2:
-    #         col2 = st.selectbox("Einheit", ["g", "kg", "l"])
-    #     with col3:
-    #         col3 = st.text_input("Zutat", placeholder="Mehl")
+if vorschau:
+    st.caption("[Vorschau]")
+    r = Rezept(name, zutaten, zubereitung)
+    r.display()
 
-    ## Zubereitung
-    st.text_area("Zubereitung")
-    # Every form must have a submit button.
-    submitted = st.form_submit_button("Rezept ersellen")
-    # if submitted:
-    #     st.write("slider", slider_val, "checkbox", checkbox_val)
+submit_recipe = st.button("Rezept erstellen/ aktualisieren")
 
-st.write("Outside the form")
+if submit_recipe:
+    st.session_state.dieses_kochbuch = st.session_state.dieses_kochbuch.append(Rezept(name, zutaten, zubereitung))
+    st.balloons()
+    st.toast('Your Rezipe was saved!', icon='😍')
+

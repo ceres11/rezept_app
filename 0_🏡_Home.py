@@ -1,18 +1,13 @@
-import streamlit as st
-import numpy as np
-import pandas as pd
+from pages import *
 
-st.set_page_config( page_title="Home")
+st.set_page_config(page_title="Home")
 
+st.write("### Login")
+user = st.text_input("username")
 
-"# Test"
-
-
-a = st.text_input("Bitte eingeben")
-
-st.write(a)
-
-st.write("hello")
+if st.button("Login"):
+    st.session_state.user = user
+    switch_page("recipe")
 
 
 # dataframe = pd.DataFrame(
