@@ -41,3 +41,6 @@ sel_recipe.display()
 # ---------------------- DEBUG -------------------------------------------------------------
 st.write("## Debug")
 st.json(json.dumps(st.session_state.dieses_kochbuch, default=lambda o: o.__dict__, sort_keys=False, indent=4))
+
+
+unit_reg = get_unit_registry()
