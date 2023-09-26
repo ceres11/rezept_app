@@ -5,16 +5,6 @@ import pandas as pd
 st.set_page_config( page_title="Home")
 
 
-"# Test"
-
-
-a = st.text_input("Bitte eingeben")
-
-st.write(a)
-
-st.write("hello")
-
-
 # dataframe = pd.DataFrame(
 #     np.random.randn(10, 20),
 #     columns=('col %d' % i for i in range(20)))
