@@ -56,7 +56,13 @@ vorschau = st.button("Rezept generieren")
 
 if vorschau:
     st.caption("[Vorschau]")
-    zutaten = Zutat.construct_from_str(zutaten)
+
+    # Zutaten input formatieren:
+    zutaten = zutaten.split("\n")
+    for i in range(len(zutaten)):
+        zutaten[i] = Zutat.from_str(zutaten[i])
+
+    # Rezept erstellen und anzeigen
     r = Rezept(name, zutaten, 1, zubereitung, autor)
     st.markdown(r.to_docstring())
 

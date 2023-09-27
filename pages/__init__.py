@@ -27,12 +27,13 @@ class Zutat:
         self.einheit = str(einheit)
 
     @staticmethod
-    def construct_from_str(input_str: str):
-        rows = input_str.split("\n")
-        for i, row in enumerate(rows):
-            rows[i] = row.replace("- ", "").split(" ")
-            rows[i] = Zutat(rows[i][0], rows[i][1], rows[i][2])
-        return rows
+    def from_str(input_str: str):
+        """
+        :param input_str: mit dem Format: "Menge Einheit Zutat"
+        :return: Zutat instanz
+        """
+        split_s = input_str.split(" ")
+        return Zutat(split_s[0], split_s[1], split_s[2])
 
     def __repr__(self):
         return str(self.menge) + " " + self.einheit + " " + self.name
@@ -66,6 +67,7 @@ class Rezept:
     zubereitung: str
     portionen: int # die Standard-Portionszahl
     Zutaten_portioniert: dict
+    # @todo: attribut "in kochbuch" hinzufuegen um Rezepte zu kochbuechern zuordnen zu koennen?
 
     def __init__(self, name: str,  zutaten: list, portionen: int, zubereitung: str, autor="anonym"):
         self.name = name
@@ -79,7 +81,8 @@ class Rezept:
         #     z = self.Zutaten[key]
         #     self.Zutaten_portioniert[key] = Zutat(z.name, z.menge, z.einheit)
 
-    def str_zutaten(self):
+    def zutaten_to_str(self):
+        # Helpermethode fuer to_docstring()
         zutaten_string = "- " + "\n- ".join([str(zutat) for zutat in self.Zutaten])
         return zutaten_string
 
@@ -91,7 +94,6 @@ class Rezept:
         Rezept: {self.name}
         Autor: {self.autor}
         '''
-
 
     # def add_zubereitung(self, beschreibung: str):
     #     self.beschreibung = beschreibung # Zutaten werden rein formatiert
