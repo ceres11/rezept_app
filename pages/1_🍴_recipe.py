@@ -1,17 +1,9 @@
-import statistics
-
-import streamlit
-
 from pages import *
-# @todo:
-# - file read
-# - file write
+
 
 if "user" not in st.session_state:
     print("run initialize")
     initialize_session_state_variables()
-
-st.sidebar.markdown("# Rezepte 🍴")
 
 st.write("## Rezepte 🍴")
 
@@ -29,13 +21,10 @@ col1, col2, _ = st.columns([1, 1, 2], gap="small")
 with col1:
     if st.button("Rezept bearbeiten"):
         st.session_state.edit_recipe = st.session_state.dieses_kochbuch.Rezepte[radio_select]
-        st.session_state.n_zutaten = 1
         switch_page("recipe_editor")
 
 with col2:
     if st.button("Neues Rezept"):
-        st.session_state.edit_recipe = ""
-        st.session_state.n_zutaten = 1
         switch_page("recipe_editor")
 
 # Using magic output

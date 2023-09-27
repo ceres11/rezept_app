@@ -10,6 +10,9 @@ from streamlit_extras.switch_page_button import switch_page
 def get_unit_registry():
     return UnitRegistry(fmt_locale='de_DE') # slow!
 
+# @ todo: cache recipe load?
+# e.g.: data = read.json(*alle rezepte*)
+
 
 class Zutat:
     # class variables
@@ -87,7 +90,7 @@ class Rezept:
         return zutaten_string
 
     def to_docstring(self):
-        return f"""## {self.name}\n*von {self.autor}*\n### Zutaten\n{self.str_zutaten()}\n### Zubereitung\n{self.zubereitung}"""
+        return f"""## {self.name}\n*von {self.autor}*\n### Zutaten\n{self.zutaten_to_str()}\n### Zubereitung\n{self.zubereitung}"""
 
     def __str__(self):
         return f'''
@@ -148,4 +151,7 @@ def create_kochbuch():
     kb.append(rezept2)
     return kb
 
+
+def save_all():
+    pass  # @todo: write to json
 

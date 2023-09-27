@@ -6,7 +6,6 @@ st.write("### Login")
 user = st.text_input("username")
 
 if st.button("Login"):
-    print("run initialize")
     initialize_session_state_variables(user)
     switch_page("recipe")
 
