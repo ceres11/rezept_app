@@ -6,10 +6,12 @@ st.write("### Login")
 user = st.text_input("username")
 
 if st.button("Login"):
-    st.session_state.user = user
+    print("run initialize")
+    initialize_session_state_variables(user)
     switch_page("recipe")
 
 
+# everything below is commented out
 # dataframe = pd.DataFrame(
 #     np.random.randn(10, 20),
 #     columns=('col %d' % i for i in range(20)))

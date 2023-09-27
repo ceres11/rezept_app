@@ -1,13 +1,15 @@
+import statistics
+
+import streamlit
+
 from pages import *
 # @todo:
 # - file read
 # - file write
 
-initialize_session_state_variables()
-for i in st.session_state.items():
-    i
-
-st.write(st.session_state.dieses_kochbuch.Rezepte.keys())
+if "user" not in st.session_state:
+    print("run initialize")
+    initialize_session_state_variables()
 
 st.sidebar.markdown("# Rezepte 🍴")
 
@@ -27,20 +29,24 @@ col1, col2, _ = st.columns([1, 1, 2], gap="small")
 with col1:
     if st.button("Rezept bearbeiten"):
         st.session_state.edit_recipe = st.session_state.dieses_kochbuch.Rezepte[radio_select]
+        st.session_state.n_zutaten = 1
         switch_page("recipe_editor")
 
 with col2:
     if st.button("Neues Rezept"):
         st.session_state.edit_recipe = ""
+        st.session_state.n_zutaten = 1
         switch_page("recipe_editor")
 
 # Using magic output
 sel_recipe = st.session_state.dieses_kochbuch.Rezepte[radio_select]
-sel_recipe.display()
+st.markdown(sel_recipe.to_docstring())
 
 # ---------------------- DEBUG -------------------------------------------------------------
 st.write("## Debug")
+
 st.json(json.dumps(st.session_state.dieses_kochbuch, default=lambda o: o.__dict__, sort_keys=False, indent=4))
 
+st.write(st.session_state)
 
 unit_reg = get_unit_registry()
