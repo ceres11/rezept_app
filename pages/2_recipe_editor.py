@@ -1,4 +1,4 @@
-from pages import *
+from rezept_pkg import *
 
 if "user" not in st.session_state:
     initialize_session_state_variables()

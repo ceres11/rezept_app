@@ -1,4 +1,4 @@
-from pages import *
+from rezept_pkg import *
 
 st.set_page_config(page_title="Home")
 
