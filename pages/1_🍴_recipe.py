@@ -1,19 +1,17 @@
 from rezept_pkg import *
 import glob
+import numpy as np
+import io
 
 st.set_page_config(layout="wide")
 
-
-# ToDo:
-# - Rezepte aus Ordner lesen
-#
 
 # ------------------------------------------------------------------
 #           Set up Session variables
 # ------------------------------------------------------------------
 
-if 'dieses_kochbuch' not in st.session_state:
-    st.session_state.dieses_kochbuch = create_kochbuch()
+if 'selected_kochbuch' not in st.session_state:
+    st.session_state.selected_kochbuch = 0
 
 if 'rezept_erstellt_' not in st.session_state:
     st.session_state.rezept_erstellt_ = False
@@ -38,7 +36,7 @@ if st.session_state.rezept_erstellt_fehlschlag:
 
 # load session variables
 session = st.session_state
-dieses_kochbuch = st.session_state.dieses_kochbuch
+selected_kochbuch = st.session_state.selected_kochbuch
 
 
 if 'next_radio_select' not in session:
@@ -49,77 +47,46 @@ if 'next_radio_select' not in session:
 
 st.write("## Rezepte 🍴")
 
+PATH_RECIPES = ".\\recipes\\"
 
+selected_kochbuch = st.radio("Kochbuch", options=os.listdir(PATH_RECIPES), key="select_kochbuch", index=st.session_state.selected_kochbuch)
+path_kochbuch = PATH_RECIPES + selected_kochbuch
 
+sel_recipe = st.radio("Rezepte", options=os.listdir(path_kochbuch), key="radio_select", index=st.session_state.next_radio_select)
+path_recipe = path_kochbuch + "\\" + sel_recipe
 
-radio_select = st.radio("rezepte", options=dieses_kochbuch.Rezepte.keys(), label_visibility="collapsed", key="radio_select", index=st.session_state.next_radio_select)
-
-sel_recipe = dieses_kochbuch.Rezepte[radio_select]
-
-col1, col2, col3, col4 = st.columns([1, 1, 1, 2], gap="small")
-
-with col1:
-    rezeptname = st.text_input("rezeptname", "rezeptname", label_visibility="collapsed")
-
-with col2:
-    if st.button("Neues Rezept"):
-        if rezeptname != "" and rezeptname != "rezeptname" and rezeptname not in dieses_kochbuch.Rezepte.keys():
-            dieses_kochbuch.append(Rezept(rezeptname))
-            st.session_state.next_radio_select = dieses_kochbuch.Rezepte.__len__() - 1
-            st.session_state.rezept_erstellt_ = True
-            st.rerun()
-        else:
-            st.session_state.rezept_erstellt_fehlschlag = True
-            st.rerun()
-
-
-recipe_images = []
-st.write(os.listdir(".\\recipes\\Kochbuch_Lukas"))
-
-
-# def create_kochbuch():
-#     zubereitung = '''
-#     1. Schritt: Wasser zum kochen bringen
-#     2. Schritt: Zwiebeln schälen und schneiden
-#     3. Schritt: Die {Zutat 1} würfeln
-#     '''
-#     rezept = Rezept("Schinkenbrot", {"Zutat 1": Zutat(100, "g", "Schinken"), "Zutat 2": Zutat(500, "g", "Brot")}, 2, zubereitung, autor="Lukas")
-
-
-#     zubereitung2 = '''
-#         1. Schritt: Wasser zum kochen bringen
-#         2. Schritt: Zwiebeln schälen und schneiden
-#         '''
-#     rezept2 = Rezept("Kaesebrot", {"Zutat 1": Zutat(100, "g", "Kaese"), "Zutat 2": Zutat(500, "g", "Brot")}, 2, zubereitung2, autor="Lukas")
-
-    
-#     kb.append(rezept)
-#     kb.append(rezept2)
-#     return kb
-
-
-
-all_recipes = {}
-level = 0
-top = '.\\recipes'
-startinglevel = top.count(os.sep)
 
   
 # -------------------------------------------------------------------------------------------------------------
 #                        Rezept
 # -------------------------------------------------------------------------------------------------------------
+st.write("## " + sel_recipe)
+
+
+# Todo:
+# - Rezept-Upload
+# - Zutaten-parser
+# - Bildfindung verbessern
 
 col1, col2 = st.columns([1, 1], gap="small")
 with col1:
-    st.image(".\\recipes\\Kochbuch_Lukas\\Schinkenbrot\\013.JPG", )
+    try:
+        st.image(path_recipe + "\\picture.jpg")
+    except:
+        print("tried opening picture type")
+    try:
+        st.image(path_recipe + "\\picture.png")
+    except:
+        print("tried opening picture type")
 
 st.write(" ")
 portionen = st.number_input("Portionen", key='portionen', step = 1, value = 4)
 
-# Using magic output
-# sel_recipe.portionieren(portionen)
-# st.table(pd.DataFrame(sel_recipe.Zutaten_portioniert, index = ["Zutat", "Menge"]).transpose())
-# st.write(sel_recipe.get_zubereitung())
+
+
+# ToDo:
+# - Eingangs-Parser (Zutaten)
+# - Rezept cache
 
 with open(".\\recipes\\Kochbuch_Lukas\\Schinkenbrot\\zubereitung.md", mode="r", encoding="utf-8") as my_file:
     
@@ -136,26 +103,23 @@ with open(".\\recipes\\Kochbuch_Lukas\\Schinkenbrot\\zubereitung.md", mode="r", 
         except ValueError:
             print("absatz verworfen")
 
+    # Zutaten einlesen, skalieren
+    df = pd.read_csv(io.StringIO(dict_text_absatz["Zutatenliste:"]), sep=",", names=["Name", "Zutat", "Menge", "Einheit"])
+    
     rezept_portionen = int(dict_text_absatz["Portionen:"])
     rezept_skalierung = portionen / rezept_portionen
+    df["Menge"] *= rezept_skalierung
 
 
-    # Zutaten einlesen
-    zutaten = dict_text_absatz["Zutatenliste:"].split("\n") # Textteil "Zutatenliste" in Zeilen aufspalten
-    dict_zutaten = {}
-
-    for i in range (0, len(zutaten)):
-        zutaten[i] = zutaten[i].split(",")
-        for j in range (0, len(zutaten[i])):
-            try:
-                zutaten[i][j] = zutaten[i][j].strip()
-                dict_zutaten[zutaten[i][0][1:-1]] = "`" + str(rezept_skalierung * int(zutaten[i][2].split(" ")[0])) + " " + zutaten[i][2].split(" ")[1] + " " + zutaten[i][1] + "`"
-            except (IndexError, ValueError):
-                print("line " + str(i) + " removed.")
+    # Zutaten Dictionary zur Text-Formatierung
+    dict_zutaten_output = {}
+    for row in df.index:
+        dict_zutaten_output[df["Name"][row]] = "`" + str(df["Menge"][row]) + df["Einheit"][row] + df["Zutat"][row] + "`"
 
 
-    output = dict_text_absatz["Zubereitung:"].format(**dict_zutaten)
-    st.markdown(output)
+    # Ausgabe:
+    st.data_editor(df, hide_index=True)
+    st.markdown(dict_text_absatz["Zubereitung:"].format(**dict_zutaten_output))
 
 
 # ---------------------- DEBUG -------------------------------------------------------------
