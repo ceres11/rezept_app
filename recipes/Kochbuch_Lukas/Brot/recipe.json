@@ -1,9 +1,0 @@
-{
-    "Zutat 1":
-    {
-        "menge": 100,
-        "einheit": "g",
-        "name": "Mehl"
-    },
-    "Zubereitung": ["Zeile 1", "Zeile 2"]
-}

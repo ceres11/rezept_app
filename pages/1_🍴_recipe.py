@@ -3,14 +3,14 @@ import glob
 
 st.set_page_config(layout="wide")
 
-@st.cache_resource
-def get_unit_registry():
-    return UnitRegistry(fmt_locale='de_DE') # slow --> cache
 
-# @st.cache_resource
-# def read_recipes_from_filesystem():
-    
+# ToDo:
+# - Rezepte aus Ordner lesen
+#
 
+# ------------------------------------------------------------------
+#           Set up Session variables
+# ------------------------------------------------------------------
 
 if 'dieses_kochbuch' not in st.session_state:
     st.session_state.dieses_kochbuch = create_kochbuch()
@@ -21,6 +21,12 @@ if 'rezept_erstellt_' not in st.session_state:
 if 'rezept_erstellt_fehlschlag' not in st.session_state:
     st.session_state.rezept_erstellt_fehlschlag = False
 
+if 'portionen' not in st.session_state:
+    st.session_state.portionen = 4
+
+
+
+# Popup messages
 if st.session_state.rezept_erstellt_:
     st.success("Rezept erstellt!", icon="✨")
     st.session_state.rezept_erstellt_ = False
@@ -29,22 +35,22 @@ if st.session_state.rezept_erstellt_fehlschlag:
     st.error("Rezept konnte nicht erstellt werden.", icon="❌")
     st.session_state.rezept_erstellt_fehlschlag = False
 
-if 'portionen' not in st.session_state:
-    st.session_state.portionen = 4
 
+# load session variables
 session = st.session_state
+dieses_kochbuch = st.session_state.dieses_kochbuch
+
 
 if 'next_radio_select' not in session:
     session.next_radio_select = 0
 
-# if 'radio_select' not in st.session_state:
-#     st.session_state.radio_select = 0
+
 
 
 st.write("## Rezepte 🍴")
 
 
-dieses_kochbuch = st.session_state.dieses_kochbuch
+
 
 radio_select = st.radio("rezepte", options=dieses_kochbuch.Rezepte.keys(), label_visibility="collapsed", key="radio_select", index=st.session_state.next_radio_select)
 
@@ -68,7 +74,7 @@ with col2:
 
 
 recipe_images = []
-st.write(os.listdir(".\\recipes\\Kochbuch_Lukas\\Brot\\"))
+st.write(os.listdir(".\\recipes\\Kochbuch_Lukas"))
 
 
 # def create_kochbuch():
@@ -99,6 +105,81 @@ top = '.\\recipes'
 startinglevel = top.count(os.sep)
 
   
+# -------------------------------------------------------------------------------------------------------------
+#                        Rezept
+# -------------------------------------------------------------------------------------------------------------
+
+col1, col2 = st.columns([1, 1], gap="small")
+with col1:
+    st.image(".\\recipes\\Kochbuch_Lukas\\Schinkenbrot\\013.JPG", )
+
+st.write(" ")
+portionen = st.number_input("Portionen", key='portionen', step = 1, value = 4)
+
+# Using magic output
+# sel_recipe.portionieren(portionen)
+# st.table(pd.DataFrame(sel_recipe.Zutaten_portioniert, index = ["Zutat", "Menge"]).transpose())
+# st.write(sel_recipe.get_zubereitung())
+
+with open(".\\recipes\\Kochbuch_Lukas\\Schinkenbrot\\zubereitung.md", mode="r", encoding="utf-8") as my_file:
+    
+    text = my_file.read()
+
+    # Absätze aufteilen
+    text_segmented = text.split("# ")
+    dict_text_absatz = {}
+
+    for absatz in text_segmented:
+        titel = absatz.split("\n")[0]
+        try:
+            dict_text_absatz[titel] = absatz.split(titel)[1].strip()
+        except ValueError:
+            print("absatz verworfen")
+
+    rezept_portionen = int(dict_text_absatz["Portionen:"])
+    rezept_skalierung = portionen / rezept_portionen
+
+
+    # Zutaten einlesen
+    zutaten = dict_text_absatz["Zutatenliste:"].split("\n") # Textteil "Zutatenliste" in Zeilen aufspalten
+    dict_zutaten = {}
+
+    for i in range (0, len(zutaten)):
+        zutaten[i] = zutaten[i].split(",")
+        for j in range (0, len(zutaten[i])):
+            try:
+                zutaten[i][j] = zutaten[i][j].strip()
+                dict_zutaten[zutaten[i][0][1:-1]] = "`" + str(rezept_skalierung * int(zutaten[i][2].split(" ")[0])) + " " + zutaten[i][2].split(" ")[1] + " " + zutaten[i][1] + "`"
+            except (IndexError, ValueError):
+                print("line " + str(i) + " removed.")
+
+
+    output = dict_text_absatz["Zubereitung:"].format(**dict_zutaten)
+    st.markdown(output)
+
+
+# ---------------------- DEBUG -------------------------------------------------------------
+st.write("## Debug")
+st.json(json.dumps(dieses_kochbuch, default=json_encoder, sort_keys=False, indent=4))
+
+
+
+level = 0
+
+top = '.\\recipes'
+startinglevel = top.count(os.sep)
+  
+st.write("## File structure")
+for (root, dirs, files) in os.walk(".\\recipes"):
+    level = root.count(os.sep) - startinglevel
+    st.write(level) 
+    st.write(root)
+    st.write(dirs)
+    st.write(files)
+    st.markdown("---")
+
+
+    
 st.write("## File structure")
 for (root, dirs, files) in os.walk(".\\recipes"):
     level = root.count(os.sep) - startinglevel
@@ -129,45 +210,3 @@ for (root, dirs, files) in os.walk(".\\recipes"):
 
 # for recipe in all_recipes:
 st.json(json.dumps(all_recipes, default=json_encoder, sort_keys=False, indent=4))
-
-
-col1, col2 = st.columns([1, 1], gap="small")
-with col1:
-    st.image(".\\recipes\\Kochbuch_Lukas\\Brot\\013.JPG", )
-
-st.write(" ")
-portionen = st.number_input("Portionen", key='portionen', step = 1)
-
-
-    
-# Using magic output
-sel_recipe.portionieren(portionen)
-st.table(pd.DataFrame(sel_recipe.Zutaten_portioniert, index = ["Zutat", "Menge"]).transpose())
-st.write(sel_recipe.get_zubereitung())
-
-
-# ---------------------- DEBUG -------------------------------------------------------------
-st.write("## Debug")
-st.json(json.dumps(dieses_kochbuch, default=json_encoder, sort_keys=False, indent=4))
-
-
-
-level = 0
-
-top = '.\\recipes'
-startinglevel = top.count(os.sep)
-  
-st.write("## File structure")
-for (root, dirs, files) in os.walk(".\\recipes"):
-    level = root.count(os.sep) - startinglevel
-    st.write(level) 
-    st.write(root)
-    st.write(dirs)
-    st.write(files)
-    st.markdown("---")
-
-
-unit_reg = get_unit_registry()
-# --------------- Units -------------------------------
-Q = unit_reg.Quantity
-Q("200g").to("kg")
